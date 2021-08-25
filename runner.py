@@ -15,14 +15,16 @@ class Player(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect(midbottom = (80,300))
 		self.gravity = 0
 
-		# self.jump_sound = pygame.mixer.Sound('audio/jump.mp3')
-		# self.jump_sound.set_volume(0.5)
+		self.jump_sound = pygame.mixer.Sound('audio/jump.wav')
+		self.jump_sound.set_volume(0.5)
 
 	def player_input(self):
-		keys = pygame.key.get_pressed()
-		if keys[pygame.K_SPACE] and self.rect.bottom >= 300:
-			self.gravity = -20
-		# 	self.jump_sound.play()
+		current_time = pygame.time.get_ticks() - start_time
+		if current_time > 500:
+			keys = pygame.key.get_pressed()
+			if keys[pygame.K_SPACE] and self.rect.bottom >= 300:
+				self.gravity = -20
+				self.jump_sound.play()
 
 	def apply_gravity(self):
 		self.gravity += 1
@@ -58,12 +60,15 @@ class Obstacle(pygame.sprite.Sprite):
 			self.frames = [snail_1,snail_2]
 			y_pos  = 300
 
+		self.type = type
 		self.animation_index = 0
 		self.image = self.frames[self.animation_index]
 		self.rect = self.image.get_rect(midbottom = (randint(900,1100),y_pos))
 
 	def animation_state(self):
-		self.animation_index += 0.1 
+		if self.type == 'fly':
+			self.animation_index += 0.2
+		else: self.animation_index += 0.05
 		if self.animation_index >= len(self.frames): self.animation_index = 0
 		self.image = self.frames[int(self.animation_index)]
 
@@ -75,6 +80,17 @@ class Obstacle(pygame.sprite.Sprite):
 	def destroy(self):
 		if self.rect.x <= -100: 
 			self.kill()
+
+def decor():
+	sky_rect.x -= 1
+	if sky_rect.right <= 800:
+		sky_rect.left = 0
+	screen.blit(sky_surf,sky_rect)
+
+	ground_rect.x -= 4
+	if ground_rect.right <= 800:
+		ground_rect.left = 0
+	screen.blit(ground_surf,ground_rect)
 
 def display_score():
 	current_time = (pygame.time.get_ticks() - start_time) // 1000
@@ -145,16 +161,7 @@ while True:
 
 
 	if game_active:
-		sky_rect.x -= 1
-		if sky_rect.right <= 800:
-			sky_rect.left = 0
-		screen.blit(sky_surf,sky_rect)
-
-		ground_rect.x -= 6
-		if ground_rect.right <= 800:
-			ground_rect.left = 0
-		screen.blit(ground_surf,ground_rect)
-
+		decor()
 		score = display_score()
 		
 		player.draw(screen)
